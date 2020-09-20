@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27703.2026
+VisualStudioVersion = 15.0.28307.779
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomKeyEvents", "CustomKeyEvents\CustomKeyEvents.csproj", "{E7259997-7DD6-4E38-B12A-E5314D4A8870}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomKeyEvents", "CustomKeyEvents\CustomKeyEvents.csproj", "{0EB5EBEB-5CFC-4FD8-9BEF-83A801729BF6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomKeyEventsEditor", "CustomKeyEventsEditor\CustomKeyEventsEditor.csproj", "{F68212BA-E441-4250-B6F2-32DEEEDE7C1E}"
 EndProject
@@ -13,10 +13,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E7259997-7DD6-4E38-B12A-E5314D4A8870}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7259997-7DD6-4E38-B12A-E5314D4A8870}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7259997-7DD6-4E38-B12A-E5314D4A8870}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7259997-7DD6-4E38-B12A-E5314D4A8870}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EB5EBEB-5CFC-4FD8-9BEF-83A801729BF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EB5EBEB-5CFC-4FD8-9BEF-83A801729BF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EB5EBEB-5CFC-4FD8-9BEF-83A801729BF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EB5EBEB-5CFC-4FD8-9BEF-83A801729BF6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F68212BA-E441-4250-B6F2-32DEEEDE7C1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F68212BA-E441-4250-B6F2-32DEEEDE7C1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F68212BA-E441-4250-B6F2-32DEEEDE7C1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -26,6 +26,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {1F11CA9A-7B50-4E5F-B124-801D8BF642B9}
+		SolutionGuid = {1FCB1344-90FA-408E-AA58-439C93884855}
 	EndGlobalSection
 EndGlobal

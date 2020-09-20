@@ -1,6 +1,10 @@
-﻿using UnityEngine;
+﻿using DynamicOpenVR.IO;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
+using Valve.VR;
 
 namespace AvatarScriptPack
 {
@@ -117,7 +121,8 @@ namespace AvatarScriptPack
 		[Tooltip("Called when released after long click.")]
 		public UnityEvent releaseAfterLongClickEvents = new UnityEvent();
 
-		protected bool checkIndex, checkVive, checkOculus, checkWMR;
+		private KeyCode triggerButton;
+
 		protected const float interval = 0.5f;
 		protected const float longClickInterval = 0.6f;
 		protected float pressTime;
@@ -126,85 +131,203 @@ namespace AvatarScriptPack
 		protected bool checkDoubleClick = false;
 		protected bool checkLongClick = false;
 		protected bool longClicked = false;
-		
+
 		protected bool triggerPressed = false;
+		protected string model = "";
+
+
+		private VectorInput _leftTriggerAction, _rightTriggerAction;
+		private BooleanInput _leftAAction, _rightAAction;
+		private BooleanInput _leftBAction, _rightBAction;
+		private BooleanInput _leftTrackpadAction, _rightTrackpadAction;
 
 
 		// Use this for initialization
 		void Start()
 		{
-			string model = XRDevice.model != null ? XRDevice.model.ToLower() : "";
-			checkIndex = false;
-			checkVive = false;
-			checkOculus = false;
-			checkWMR = false;
+			_leftTriggerAction = new VectorInput("/actions/main/in/lefttriggervalue");
+			_rightTriggerAction = new VectorInput("/actions/main/in/righttriggervalue");
+			_leftAAction = new BooleanInput("/actions/main/in/lefta");
+			_rightAAction = new BooleanInput("/actions/main/in/righta");
+			_leftBAction = new BooleanInput("/actions/main/in/leftb");
+			_rightBAction = new BooleanInput("/actions/main/in/rightb");
+			_leftTrackpadAction = new BooleanInput("/actions/main/in/lefttrackpadpress");
+			_rightTrackpadAction = new BooleanInput("/actions/main/in/righttrackpadpress");
+
+			model = XRDevice.model != null ? XRDevice.model.ToLower() : "";
+
+
 			if (model.Contains("index"))
 			{
-				checkIndex = true;
+				triggerButton = (KeyCode)IndexTriggerButton;
 			}
 			else if (model.Contains("vive"))
 			{
-				checkVive = true;
+				triggerButton = (KeyCode)ViveTriggerButton;
 			}
 			else if (model.Contains("oculus"))
 			{
-				checkOculus = true;
+				triggerButton = (KeyCode)OculusTriggerButton;
 			}
 			else
 			{
-				checkWMR = true;
+				triggerButton = (KeyCode)WMRTriggerButton;
 			}
+			CustomKeyEvents.Logger.log.Debug("model: " + model);
 			//Debug.Log("model: " + model);
 		}
 
 		// Update is called once per frame
 		void Update()
 		{
-			//foreach (KeyCode kcode in Enum.GetValues(typeof(KeyCode)))
-			//{
-			//	if (Input.GetKeyDown(kcode))
-			//		Console.WriteLine("KeyCode down: " + kcode);
-			//	if (Input.GetKey(kcode))
-			//		Console.WriteLine("KeyCode hold: " + kcode);
-			//	if (Input.GetKeyUp(kcode))
-			//		Console.WriteLine("KeyCode up: " + kcode);
-			//}
-			KeyCode triggerButton = (checkIndex)
-										   ? (KeyCode)IndexTriggerButton
-										   : (checkVive)
-										   ? (KeyCode)ViveTriggerButton
-										   : (checkOculus)
-										   ? (KeyCode)OculusTriggerButton
-										   : (checkWMR)
-										   ? (KeyCode)WMRTriggerButton
-										   : KeyCode.None;
 			if (triggerButton == KeyCode.None)
-				return;
-			if(true)
 			{
-				if (Input.GetKeyDown(triggerButton))
+				enabled = false;
+				return;
+			}
+
+			BooleanInput buttonAction = null;
+
+			if (triggerButton == (KeyCode)IndexButton.LeftInnerFace)
+			{
+				// Oculus X button
+				//CustomKeyEvents.Logger.log.Debug("IndexButton.LeftInnerFace");
+				buttonAction = _leftAAction;
+			}
+			else if (triggerButton == (KeyCode)IndexButton.RightInnerFace)
+			{
+				// Oculus A button
+				//CustomKeyEvents.Logger.log.Debug("IndexButton.RightInnerFace");
+				buttonAction = _rightAAction;
+			}
+			else if (triggerButton == (KeyCode)IndexButton.LeftOuterFace)
+			{
+				// Oculus Y button
+				//CustomKeyEvents.Logger.log.Debug("IndexButton.LeftOuterFace");
+				buttonAction = _leftBAction;
+			}
+			else if (triggerButton == (KeyCode)IndexButton.RightOuterFace)
+			{
+				// Oculus B button
+				//CustomKeyEvents.Logger.log.Debug("IndexButton.RightOuterFace");
+				buttonAction = _rightBAction;
+			}
+			else if (triggerButton == (KeyCode)IndexButton.LeftTrackpadPress)
+			{
+				//CustomKeyEvents.Logger.log.Debug("IndexButton.LeftTrackpadPress");
+				buttonAction = _leftTrackpadAction;
+			}
+			else if (triggerButton == (KeyCode)IndexButton.RightTrackpadPress)
+			{
+				//CustomKeyEvents.Logger.log.Debug("IndexButton.RightTrackpadPress");
+				buttonAction = _rightTrackpadAction;
+			}
+			//else
+			//{
+			//	return;
+			//}
+
+			if (triggerButton == (KeyCode)ViveButton.LeftTrigger || triggerButton == (KeyCode)ViveButton.RightTrigger)
+			{
+				var triggerAction = (triggerButton == (KeyCode)ViveButton.LeftTrigger) ? _leftTriggerAction : _rightTriggerAction;
+				if (!triggerAction.isActive)
+					return;
+				float triggerValue = triggerAction.value;
+				//Console.WriteLine("triggerValue : " + triggerValue);
+				//CustomKeyEvents.Logger.log.Debug("triggerValue : " + triggerValue);
+
+				if (triggerValue > 0.5f)
 				{
-					//Debug.Log(triggerButton + " is pressed");
+					//GetKeyDown
+					if (!triggerPressed)
+					{
+						//Console.WriteLine(triggerAction.name + " is down");
+						CustomKeyEvents.Logger.log.Debug(triggerAction.name + " is down");
+						triggerPressed = true;
+						checkDoubleClick = (Time.time - pressTime <= interval);
+						pressTime = Time.time;
+						OnPress();
+						checkLongClick = true;
+						checkClick = false;
+					}
+					//GetKey
+					OnHold();
+					if (checkLongClick && Time.time - pressTime >= longClickInterval)
+					{
+						//Console.WriteLine(triggerAction.name + " is longClicked");
+						CustomKeyEvents.Logger.log.Debug(triggerAction.name + " is longClicked");
+						checkLongClick = false;
+						OnLongClick();
+						longClicked = true;
+					}
+				}
+				if (triggerPressed && triggerValue < 0.1f)
+				{
+					//Console.WriteLine(triggerAction.name + " is up");
+					CustomKeyEvents.Logger.log.Debug(triggerAction.name + " is up");
+					//GetKeyUp
+					triggerPressed = false;
+					releaseTime = Time.time;
+					OnRelease();
+					if (longClicked)
+					{
+						OnReleaseAfterLongClick();
+						longClicked = false;
+					}
+					if (releaseTime - pressTime <= interval)
+					{
+						if (checkDoubleClick)
+						{
+							OnDoubleClick();
+						}
+						else
+						{
+							checkClick = true;
+						}
+					}
+				}
+				if (checkClick && Time.time - releaseTime > interval)
+				{
+					checkClick = false;
+					OnClick();
+				}
+			}
+			else
+			{
+				if (buttonAction == null)
+				{
+					CustomKeyEvents.Logger.log.Warn("buttonAction could not be assigned. model: " + model + ", triggerButton: " + triggerButton.ToString());
+					enabled = false;
+					return;
+				}
+				if (buttonAction.activeChange)
+				{
+					//Console.WriteLine(buttonAction.name + " is pressed");
+					CustomKeyEvents.Logger.log.Debug(buttonAction.name + " is pressed");
 					checkDoubleClick = (Time.time - pressTime <= interval);
 					pressTime = Time.time;
 					OnPress();
 					checkLongClick = true;
 					checkClick = false;
 				}
-				if (Input.GetKey(triggerButton))
+				if (buttonAction.state)
 				{
-					//Debug.Log(triggerButton + " is hold");
+					//Console.WriteLine(buttonAction.name + " is hold");
+					//CustomKeyEvents.Logger.log.Debug(buttonAction.name + " is hold");
 					OnHold();
 					if (checkLongClick && Time.time - pressTime >= longClickInterval)
 					{
+						//Console.WriteLine(buttonAction.name + " is longClicked");
+						CustomKeyEvents.Logger.log.Debug(buttonAction.name + " is longClicked");
 						checkLongClick = false;
 						OnLongClick();
 						longClicked = true;
 					}
 				}
-				if (Input.GetKeyUp(triggerButton))
+				if (buttonAction.inactiveChange)
 				{
-					//Debug.Log(triggerButton + " is up");
+					//Console.WriteLine(buttonAction.name + " is up");
+					CustomKeyEvents.Logger.log.Debug(buttonAction.name + " is up");
 					releaseTime = Time.time;
 					OnRelease();
 					if (longClicked)
@@ -231,49 +354,56 @@ namespace AvatarScriptPack
 					OnClick();
 				}
 			}
-			
+
 
 		}
 
 		void OnClick()
 		{
-			//Debug.Log("OnClick");
+			//Console.WriteLine("OnClick");
+			CustomKeyEvents.Logger.log.Debug("OnClick");
 			clickEvents.Invoke();
 		}
 
 		void OnDoubleClick()
 		{
-			//Debug.Log("OnDoubleClick");
+			//Console.WriteLine("OnDoubleClick");
+			CustomKeyEvents.Logger.log.Debug("OnDoubleClick");
 			doubleClickEvents.Invoke();
 		}
 
 		void OnLongClick()
 		{
-			//Debug.Log("OnLongClick");
+			//Console.WriteLine("OnLongClick");
+			CustomKeyEvents.Logger.log.Debug("OnLongClick");
 			longClickEvents.Invoke();
 		}
 
 		void OnPress()
 		{
-			//Debug.Log("OnPress");
+			//Console.WriteLine("OnPress");
+			CustomKeyEvents.Logger.log.Debug("OnPress");
 			pressEvents.Invoke();
 		}
 
 		void OnHold()
 		{
-			//Debug.Log("OnHold");
+			//Console.WriteLine("OnHold");
+			//CustomKeyEvents.Logger.log.Debug("OnHold");
 			holdEvents.Invoke();
 		}
 
 		void OnRelease()
 		{
-			//Debug.Log("OnRelease");
+			//Console.WriteLine("OnRelease");
+			CustomKeyEvents.Logger.log.Debug("OnRelease");
 			releaseEvents.Invoke();
 		}
 
 		void OnReleaseAfterLongClick()
 		{
-			//Debug.Log("OnRelease");
+			//Console.WriteLine("OnReleaseAfterLongClick");
+			CustomKeyEvents.Logger.log.Debug("OnReleaseAfterLongClick");
 			releaseAfterLongClickEvents.Invoke();
 		}
 

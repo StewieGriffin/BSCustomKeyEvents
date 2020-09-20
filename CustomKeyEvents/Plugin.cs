@@ -1,67 +1,61 @@
-﻿using IPA;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using IPA;
+using IPA.Config;
+using IPA.Config.Stores;
 using UnityEngine.SceneManagement;
+using UnityEngine;
+using IPALogger = IPA.Logging.Logger;
 
 namespace CustomKeyEvents
 {
+
 	[Plugin(RuntimeOptions.SingleStartInit)]
-	class Plugin
+	public class Plugin
 	{
-
-		public string Name => "CustomKeyEvents";
-		public string Version => "0.1.0";
-
+		internal static Plugin instance { get; private set; }
+		internal static string Name => "CustomKeyEvents";
 
 		[Init]
-		public void Init()
+		/// <summary>
+		/// Called when the plugin is first loaded by IPA (either when the game starts or when the plugin is enabled if it starts disabled).
+		/// [Init] methods that use a Constructor or called before regular methods like InitWithConfig.
+		/// Only use [Init] with one Constructor.
+		/// </summary>
+		public void Init(IPALogger logger)
 		{
-
+			instance = this;
+			Logger.log = logger;
+			Logger.log.Debug("Logger initialized.");
 		}
+
+		#region BSIPA Config
+		//Uncomment to use BSIPA's config
+		/*
+		[Init]
+		public void InitWithConfig(Config conf)
+		{
+			Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
+			Logger.log.Debug("Config loaded");
+		}
+		*/
+		#endregion
 
 		[OnStart]
 		public void OnApplicationStart()
 		{
+			Logger.log.Debug("OnApplicationStart");
+			new GameObject("CustomKeyEventsController").AddComponent<CustomKeyEventsController>();
+
 		}
 
 		[OnExit]
 		public void OnApplicationQuit()
 		{
-		}
+			Logger.log.Debug("OnApplicationQuit");
 
-
-		private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
-		{
-		}
-
-		private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
-		{
-		}
-
-		public void OnLevelWasLoaded(int level)
-		{
-		}
-
-		public void OnLevelWasInitialized(int level)
-		{
-		}
-
-		public void OnUpdate()
-		{
-		}
-
-		public void OnFixedUpdate()
-		{
-		}
-
-		public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
-		{
-		}
-
-		public void OnSceneUnloaded(Scene scene)
-		{
-		}
-
-		public void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
-		{
 		}
 	}
 }
